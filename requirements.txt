@@ -19,7 +19,7 @@ email-validator==2.2.0
 slowapi==0.1.9
 opencv-python-headless==4.10.0.84
 numpy==2.2.1
-# Optional production AI integrations:
-# ultralytics
-# paddleocr
-# supervision
+# Production AI integrations:
+ultralytics==8.3.0
+paddleocr==2.9.1
+supervision==0.24.0
