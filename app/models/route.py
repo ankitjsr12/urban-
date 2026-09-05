@@ -65,6 +65,10 @@ class Route(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     def __init__(self, *args, **kwargs):
         if "code" in kwargs and "route_number" not in kwargs:
             kwargs["route_number"] = kwargs.pop("code")
+        if "geometry_wkt" in kwargs and "geometry" not in kwargs:
+            from geoalchemy2.elements import WKTElement
+            wkt = kwargs.pop("geometry_wkt")
+            kwargs["geometry"] = WKTElement(wkt, srid=4326) if wkt else None
         kwargs.setdefault("is_active", True)
         super().__init__(*args, **kwargs)
 

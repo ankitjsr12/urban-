@@ -24,9 +24,19 @@ class EdgeUrbanDetector(Detector):
         try:
             from ultralytics import YOLO
             model_path = os.environ.get("YOLO_MODEL_PATH", "")
-            if not model_path:
-                logger.warning("YOLO_MODEL_PATH not provided. Falling back to default yolov8n.pt if not overridden.")
-                model_path = "yolov8n.pt" # Default tiny model
+            if not model_path or not os.path.exists(model_path):
+                default_candidate = os.path.abspath(
+                    os.path.join(os.path.dirname(__file__), '..', '..', 'YOLO', 'models', 'yolov8n.pt')
+                )
+                if os.path.exists(default_candidate):
+                    model_path = default_candidate
+                else:
+                    logger.warning(
+                        "Existing YOLO implementation found, but no model weights are available on disk. "
+                        "Set YOLO_MODEL_PATH to a valid model weights file (.pt/.onnx)."
+                    )
+                    self.model = None
+                    return
             
             # Use MPS on Apple Silicon if available, otherwise CPU/CUDA
             self.model = YOLO(model_path)

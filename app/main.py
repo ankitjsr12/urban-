@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.api.v1.auth import router as auth_router
 from app.api.v1.crud import router as crud_router
 from app.api.v1.analytics import router as analytics_router
+from app.api.v1.ai import router as ai_router
 from app.websocket.manager import manager
 
 app = FastAPI(
@@ -55,6 +56,7 @@ async def ready():
 app.include_router(auth_router, prefix='/api/v1')
 app.include_router(crud_router, prefix='/api/v1')
 app.include_router(analytics_router, prefix='/api/v1')
+app.include_router(ai_router, prefix='/api/v1')
 
 
 # Real-time WebSocket Channels

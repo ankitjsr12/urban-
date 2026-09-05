@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import logging
 from ai_service.models.interfaces import OCRProvider
+from ai_service.ocr.ocr_adapter import OCRAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ class ANPROCRService(OCRProvider):
     def __init__(self, model_name: str = "urbansense-anpr-ocr", model_version: str = "1.0.0"):
         self.model_name = model_name
         self.model_version = model_version
+        self.ocr_adapter = OCRAdapter()
 
     def preprocess_image(self, image_bytes: bytes) -> tuple[np.ndarray | None, dict]:
         """Preprocesses raw image buffer with grayscale, bilateral filtering, and edge contrast enhancement."""
@@ -43,6 +45,9 @@ class ANPROCRService(OCRProvider):
         if preprocessed is None:
             return "", 0.0
 
+        np_arr = np.frombuffer(image_bytes, np.uint8)
+        raw_img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
         # Heuristic plate feature localization (rectangular character band extraction)
         edged = cv2.Canny(preprocessed, 30, 200)
         contours, _ = cv2.findContours(edged, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -57,14 +62,25 @@ class ANPROCRService(OCRProvider):
             if len(approx) == 4:
                 x, y, w, h = cv2.boundingRect(approx)
                 aspect_ratio = w / float(h) if h > 0 else 0
-                if 2.0 <= aspect_ratio <= 5.5:
-                    confidence = 0.88
-                    plate_text = "WB02AB1234"
-                    break
+                if 2.0 <= aspect_ratio <= 5.5 and raw_img is not None:
+                    plate_crop = raw_img[y:y+h, x:x+w]
+                    if plate_crop.size > 0:
+                        text, conf = self.ocr_adapter.extract_text(plate_crop)
+                        cleaned = "".join(ch for ch in text.upper() if ch.isalnum())
+                        if cleaned and PLATE_REGEX.search(cleaned):
+                            plate_text = cleaned
+                            confidence = conf
+                            break
+                        elif conf > confidence and cleaned:
+                            plate_text = cleaned
+                            confidence = conf
 
-        if not plate_text:
-            # Fallback evaluation
-            plate_text = "MH12DE5678" if len(image_bytes) > 2000 else ""
-            confidence = 0.72 if plate_text else 0.0
+        # Fallback: run OCR on full image if no candidate contour produced high confidence
+        if not plate_text and raw_img is not None:
+            text, conf = self.ocr_adapter.extract_text(raw_img)
+            cleaned = "".join(ch for ch in text.upper() if ch.isalnum())
+            if cleaned:
+                plate_text = cleaned
+                confidence = conf
 
-        return plate_text, confidence
+        return plate_text, round(confidence, 4)
