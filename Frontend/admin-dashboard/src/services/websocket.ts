@@ -1,7 +1,7 @@
 type WsEvent = { channel: string; [key: string]: unknown };
 type Handler = (event: WsEvent) => void;
 
-const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
+const WS_BASE = import.meta.env.VITE_WS_URL || 'wss://urbansense-api.onrender.com';
 const VALID_CHANNELS = ['buses', 'incidents', 'detections', 'traffic'] as const;
 type Channel = typeof VALID_CHANNELS[number];
 

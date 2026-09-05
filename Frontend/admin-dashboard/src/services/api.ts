@@ -5,7 +5,7 @@ const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true';
 export { MOCK_MODE };
 
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://urbansense-api.onrender.com',
   timeout: 15_000,
   headers: { 'Content-Type': 'application/json' },
 });
