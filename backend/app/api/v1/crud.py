@@ -1,7 +1,9 @@
 import enum
 import math
 import hashlib
+import uuid
 from datetime import datetime, timezone
+from typing import Any
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, status
 from sqlalchemy import select, func, update, delete, or_
@@ -83,11 +85,11 @@ from app.websocket.manager import manager
 router = APIRouter(tags=['Urban Intelligence'])
 
 
-def out(x):
+def out(x: Any) -> dict[str, Any]:
     """Serialize SQLAlchemy model attributes safely."""
     if x is None:
-        return None
-    d = {k: v for k, v in x.__dict__.items() if not k.startswith('_')}
+        return {}
+    d: dict[str, Any] = {k: v for k, v in x.__dict__.items() if not k.startswith('_')}
     for k, v in list(d.items()):
         if isinstance(v, UUID):
             d[k] = str(v)
@@ -252,8 +254,9 @@ async def get_nearby_buses(
         dist = haversine_distance_km(latitude, longitude, loc.latitude, loc.longitude)
         if dist <= radius_km:
             loc_dict = out(loc)
-            loc_dict['distance_km'] = round(dist, 3)
-            nearby_results.append(loc_dict)
+            if loc_dict:
+                loc_dict['distance_km'] = round(dist, 3)
+                nearby_results.append(loc_dict)
 
     nearby_results.sort(key=lambda item: item['distance_km'])
     return {'data': {'items': nearby_results[:limit], 'total': len(nearby_results), 'radius_km': radius_km}}
@@ -725,8 +728,9 @@ async def get_nearby_road_defects(
         nearby = []
         for defect, dist_m in rows:
             d = out(defect)
-            d['distance_km'] = round(dist_m / 1000.0, 3)
-            nearby.append(d)
+            if d:
+                d['distance_km'] = round(dist_m / 1000.0, 3)
+                nearby.append(d)
         return {'data': {'items': nearby, 'total': len(nearby), 'radius_km': radius_km}}
     except Exception:
         rows = (await db.execute(select(RoadDefect))).scalars().all()
@@ -735,8 +739,9 @@ async def get_nearby_road_defects(
             dist = haversine_distance_km(latitude, longitude, defect.latitude, defect.longitude)
             if dist <= radius_km:
                 d = out(defect)
-                d['distance_km'] = round(dist, 3)
-                nearby.append(d)
+                if d:
+                    d['distance_km'] = round(dist, 3)
+                    nearby.append(d)
         nearby.sort(key=lambda i: i['distance_km'])
         return {'data': {'items': nearby[:limit], 'total': len(nearby), 'radius_km': radius_km}}
 
@@ -892,8 +897,9 @@ async def get_nearby_traffic(
         dist = haversine_distance_km(latitude, longitude, event.latitude, event.longitude)
         if dist <= radius_km:
             e = out(event)
-            e['distance_km'] = round(dist, 3)
-            nearby.append(e)
+            if e:
+                e['distance_km'] = round(dist, 3)
+                nearby.append(e)
     nearby.sort(key=lambda i: i['distance_km'])
     return {'data': {'items': nearby[:limit], 'total': len(nearby), 'radius_km': radius_km}}
 
@@ -976,8 +982,9 @@ async def get_nearby_incidents(
         nearby = []
         for inc, dist_m in rows:
             d = out(inc)
-            d['distance_km'] = round(dist_m / 1000.0, 3)
-            nearby.append(d)
+            if d:
+                d['distance_km'] = round(dist_m / 1000.0, 3)
+                nearby.append(d)
         return {'data': {'items': nearby, 'total': len(nearby), 'radius_km': radius_km}}
     except Exception:
         rows = (await db.execute(select(Incident))).scalars().all()
@@ -986,8 +993,9 @@ async def get_nearby_incidents(
             dist = haversine_distance_km(latitude, longitude, inc.latitude, inc.longitude)
             if dist <= radius_km:
                 d = out(inc)
-                d['distance_km'] = round(dist, 3)
-                nearby.append(d)
+                if d:
+                    d['distance_km'] = round(dist, 3)
+                    nearby.append(d)
         nearby.sort(key=lambda i: i['distance_km'])
         return {'data': {'items': nearby[:limit], 'total': len(nearby), 'radius_km': radius_km}}
 
@@ -1007,7 +1015,7 @@ async def get_incident(
         await db.execute(select(IncidentEvidence).where(IncidentEvidence.incident_id == incident_id))
     ).scalars().all()
 
-    inc_dict = out(incident)
+    inc_dict = out(incident) or {}
     inc_dict['evidence'] = [out(e) for e in evidence_rows]
     return {'data': inc_dict}
 
@@ -1048,7 +1056,7 @@ async def upload_evidence(
     user: User = Depends(current_user),
 ):
     allowed = {'image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm'}
-    if file.content_type not in allowed:
+    if not file.content_type or file.content_type not in allowed:
         raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail='Unsupported evidence file type')
 
     data = await file.read()
@@ -1056,7 +1064,8 @@ async def upload_evidence(
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail='Evidence file exceeds configured size limit')
 
     checksum = hashlib.sha256(data).hexdigest()
-    url, object_key = await get_storage().put(data, file.content_type, file.filename or 'evidence')
+    content_type: str = file.content_type
+    url, object_key = await get_storage().put(data, content_type, file.filename or 'evidence')
 
     evidence_record = None
     if incident_id:
