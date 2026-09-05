@@ -11,6 +11,13 @@ export type IncidentType =
   | 'COLLISION_LIKE_EVENT'
   | 'PEDESTRIAN_RISK'
   | 'ROAD_HAZARD'
+  | 'ACCIDENT'
+  | 'WATERLOGGING'
+  | 'TRAFFIC'
+  | 'CONGESTION'
+  | 'SECURITY'
+  | 'FIRE'
+  | 'MEDICAL'
   | 'OTHER';
 export type DetectionType =
   | 'POTHOLE'
