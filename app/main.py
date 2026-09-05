@@ -53,6 +53,12 @@ async def ready():
     return {'status': 'ready'}
 
 
+@app.post('/report', tags=['Health'])
+@app.post('/predict', tags=['Health'])
+async def legacy_report_endpoint():
+    return {'status': 'ok', 'service': 'urbansense-api'}
+
+
 # Include versioned API routers
 app.include_router(auth_router, prefix='/api/v1')
 app.include_router(crud_router, prefix='/api/v1')

@@ -17,10 +17,5 @@ shapely==2.0.6
 boto3==1.35.81
 email-validator==2.2.0
 slowapi==0.1.9
-opencv-python>=4.10.0
-numpy==2.3.5
-# Production AI integrations:
-ultralytics>=8.3.0
-paddleocr>=3.7.0
-paddlepaddle>=3.3.0
-supervision==0.24.0
+opencv-python-headless>=4.10.0
+numpy>=1.26.0

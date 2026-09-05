@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 50 * 1024 * 1024
     anpr_min_verified_confidence: float = 0.85
 
+    @field_validator('database_url', mode='before')
+    @classmethod
+    def fix_database_url(cls, value):
+        if isinstance(value, str):
+            value = value.strip()
+            if value.startswith('postgres://'):
+                return value.replace('postgres://', 'postgresql+asyncpg://', 1)
+            if value.startswith('postgresql://') and not value.startswith('postgresql+asyncpg://'):
+                return value.replace('postgresql://', 'postgresql+asyncpg://', 1)
+        return value
+
     @field_validator('cors_origins', mode='before')
     @classmethod
     def parse_origins(cls, value):
