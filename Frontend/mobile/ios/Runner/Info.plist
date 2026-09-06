@@ -50,5 +50,15 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>AI UrbanSense requires camera access for real-time road monitoring and AI hazard detection.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AI UrbanSense requires microphone access for video capture.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>AI UrbanSense requires location access to track bus routes and geotag road hazard detections.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>AI UrbanSense requires continuous location access to sense urban road conditions during transit operations.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>AI UrbanSense requires continuous location access to sense urban road conditions during transit operations.</string>
 </dict>
 </plist>
