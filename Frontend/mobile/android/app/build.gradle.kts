@@ -6,9 +6,9 @@ plugins {
 }
 
 android {
-    namespace = "in.urbansense.urbansense_mobile"
+    namespace = "com.example.urbansense_mobile"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "in.urbansense.urbansense_mobile"
+        applicationId = "com.example.urbansense_mobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -39,12 +39,6 @@ android {
     }
 }
 
-dependencies {
-    implementation("androidx.concurrent:concurrent-futures:1.2.0")
-    implementation("androidx.concurrent:concurrent-futures-ktx:1.2.0")
-}
-
 flutter {
     source = "../.."
 }
-

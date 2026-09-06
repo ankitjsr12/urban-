@@ -5,10 +5,7 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
+val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
@@ -20,13 +17,9 @@ subprojects {
 }
 
 subprojects {
-    configurations.all {
-        resolutionStrategy {
-            force("androidx.concurrent:concurrent-futures:1.2.0")
-            force("androidx.concurrent:concurrent-futures-ktx:1.2.0")
-        }
-        if (name == "implementation" || name == "compileOnly") {
-            project.dependencies.add(name, "androidx.concurrent:concurrent-futures:1.2.0")
+    if (project.name == "camera_android_camerax") {
+        project.afterEvaluate {
+            project.dependencies.add("compileOnly", "androidx.concurrent:concurrent-futures:1.1.0")
         }
     }
 }
@@ -34,4 +27,3 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
-
