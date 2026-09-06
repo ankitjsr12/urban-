@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     fcm_credentials: str | None = None
     ai_service_url: str = 'http://localhost:8001'
     cors_origins: list[str] = [
+        'http://localhost:5173,https://your-frontend.vercel.app'
         'http://localhost:3000',
         'http://localhost:5173',
         'http://127.0.0.1:3000',
@@ -33,6 +34,17 @@ class Settings(BaseSettings):
     rate_limit_per_minute: int = 120
     max_upload_bytes: int = 50 * 1024 * 1024
     anpr_min_verified_confidence: float = 0.85
+
+    @field_validator('database_url', mode='before')
+    @classmethod
+    def fix_database_url(cls, value):
+        if isinstance(value, str):
+            value = value.strip()
+            if value.startswith('postgres://'):
+                return value.replace('postgres://', 'postgresql+asyncpg://', 1)
+            if value.startswith('postgresql://') and not value.startswith('postgresql+asyncpg://'):
+                return value.replace('postgresql://', 'postgresql+asyncpg://', 1)
+        return value
 
     @field_validator('cors_origins', mode='before')
     @classmethod

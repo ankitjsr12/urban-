@@ -1,4 +1,4 @@
-package `in`.urbansense.urbansense_mobile
+package com.example.urbansense_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 
