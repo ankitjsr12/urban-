@@ -30,8 +30,15 @@ export default function LoginPage() {
       setUser(me);
       navigate('/dashboard');
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      setError(msg || 'Login failed. Please check your credentials.');
+      const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
+      const msg = axiosErr?.response?.data?.detail;
+      if (msg) {
+        setError(msg);
+      } else if (axiosErr?.message?.includes('Network Error') || !axiosErr?.response) {
+        setError('Cannot connect to backend server at ' + (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + '. Make sure the FastAPI service is running or enable mock mode in .env.');
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }

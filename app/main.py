@@ -43,6 +43,11 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
 
 
+@app.get('/', tags=['Root'])
+async def root():
+    return {'status': 'ok', 'service': 'urbansense-api'}
+
+
 @app.get('/health', tags=['Health'])
 async def health():
     return {'status': 'ok', 'service': 'urbansense-api'}

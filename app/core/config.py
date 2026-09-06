@@ -22,8 +22,7 @@ class Settings(BaseSettings):
     fcm_project_id: str | None = None
     fcm_credentials: str | None = None
     ai_service_url: str = 'http://localhost:8001'
-    cors_origins: list[str] = [
-        'http://localhost:5173,https://your-frontend.vercel.app'
+    cors_origins: list[str] | str = [
         'http://localhost:3000',
         'http://localhost:5173',
         'http://127.0.0.1:3000',
@@ -51,13 +50,19 @@ class Settings(BaseSettings):
     def parse_origins(cls, value):
         if isinstance(value, str):
             value = value.strip()
+            if not value:
+                return []
             if value.startswith('[') and value.endswith(']'):
                 import json
                 try:
-                    return json.loads(value)
+                    parsed = json.loads(value)
+                    if isinstance(parsed, list):
+                        return [str(origin).strip() for origin in parsed if str(origin).strip()]
                 except Exception:
                     pass
             return [origin.strip() for origin in value.split(',') if origin.strip()]
+        if isinstance(value, (list, tuple, set)):
+            return [str(origin).strip() for origin in value if str(origin).strip()]
         return value
 
 
