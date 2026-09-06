@@ -1,0 +1,8 @@
+# Force LF line endings for shell scripts and CocoaPods files
+# (Prevents CRLF corruption from core.autocrlf=true breaking Xcode builds)
+*.sh text eol=lf
+*.bash text eol=lf
+Podfile text eol=lf
+Podfile.lock text eol=lf
+*.podspec text eol=lf
+*.rb text eol=lf

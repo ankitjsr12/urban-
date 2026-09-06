@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 /// Application-wide constants and configuration.
 /// Override via environment variables / build-time config in production.
 class AppConfig {
@@ -5,12 +8,24 @@ class AppConfig {
 
   /// Base URL for the FastAPI backend REST API.
   /// Set via --dart-define=API_BASE_URL=https://... at build time.
-  static const String apiBaseUrl =
-      String.fromEnvironment('API_BASE_URL', defaultValue: 'https://urbansense-api.onrender.com');
+  static String get apiBaseUrl {
+    const fromEnv = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    if (!kIsWeb && Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    }
+    return 'http://localhost:8000';
+  }
 
   /// WebSocket base URL.
-  static const String wsBaseUrl =
-      String.fromEnvironment('WS_BASE_URL', defaultValue: 'wss://urbansense-api.onrender.com');
+  static String get wsBaseUrl {
+    const fromEnv = String.fromEnvironment('WS_BASE_URL', defaultValue: '');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    if (!kIsWeb && Platform.isAndroid) {
+      return 'ws://10.0.2.2:8000';
+    }
+    return 'ws://localhost:8000';
+  }
 
   /// When true, use mock data instead of real API calls.
   static const bool mockMode =
