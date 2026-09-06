@@ -60,5 +60,12 @@
 	<string>AI UrbanSense requires continuous location access to sense urban road conditions during transit operations.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>AI UrbanSense requires continuous location access to sense urban road conditions during transit operations.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp</string>
+		<string>_dartvmService._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Flutter tools use the local network to discover the Dart VM Service for debugging.</string>
 </dict>
 </plist>
