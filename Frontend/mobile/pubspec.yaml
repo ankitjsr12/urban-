@@ -36,10 +36,6 @@ dependencies:
   sqflite: ^2.3.3+1
   path: ^1.9.0
 
-  # Firebase
-  firebase_core: ^3.3.0
-  firebase_messaging: ^15.1.0
-
   # Network state
   connectivity_plus: ^6.0.3
 
