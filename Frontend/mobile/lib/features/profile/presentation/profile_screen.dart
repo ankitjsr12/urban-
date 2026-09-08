@@ -32,15 +32,27 @@ class ProfileScreen extends ConsumerWidget {
     final profileAsync = ref.watch(_profileDataProvider);
     final isOnline = ref.watch(networkOnlineProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0F1E),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF111827),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go('/dashboard');
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0F1E),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF111827),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/dashboard');
+              }
+            },
+          ),
         title: const Text('Driver Profile',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         actions: [
@@ -312,8 +324,9 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 // ─── Supporting Widgets ──────────────────────────────────────────────────────

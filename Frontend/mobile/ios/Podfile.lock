@@ -55,7 +55,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   camera_avfoundation: adb0207d868b2d873e895371d88448399ab78d87
   connectivity_plus: 2a701ffec2c0ae28a48cf7540e279787e77c447d
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
   flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
   geolocator_apple: 66b711889fd333205763b83c9dcf0a57a28c7afd
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
@@ -63,6 +63,6 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
 
-PODFILE CHECKSUM: cdd6534a16f42126b6e620b9e95633ddc09b2c0a
+PODFILE CHECKSUM: c79944fdb4ef5bfa99c22a78b7f5512ed93bab89
 
 COCOAPODS: 1.15.2

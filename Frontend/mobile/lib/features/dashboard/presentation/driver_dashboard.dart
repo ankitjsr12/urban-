@@ -265,8 +265,15 @@ class _BottomNav extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (i) {
+        if (i == currentIndex) return;
         final routes = ['/dashboard', '/map', '/monitor', '/incidents', '/profile'];
-        if (i < routes.length) context.go(routes[i]);
+        if (i < routes.length) {
+          if (routes[i] == '/dashboard') {
+            context.go(routes[i]);
+          } else {
+            context.push(routes[i]);
+          }
+        }
       },
       items: [
         const BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),

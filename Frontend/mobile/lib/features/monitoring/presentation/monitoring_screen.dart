@@ -34,7 +34,10 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
         enableAudio: false,
       );
       await ctrl.initialize();
-      if (!mounted) return;
+      if (!mounted) {
+        ctrl.dispose();
+        return;
+      }
       setState(() {
         _cameraController = ctrl;
         _cameraReady = true;
@@ -50,11 +53,18 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
 
   Future<void> _stopMonitoring() async {
     await ref.read(gpsServiceProvider).stopTracking();
-    if (mounted) context.pop();
+    if (mounted) {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/dashboard');
+      }
+    }
   }
 
   @override
   void dispose() {
+    ref.read(gpsServiceProvider).stopTracking();
     _cameraController?.dispose();
     super.dispose();
   }
@@ -64,7 +74,13 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
     final position = ref.watch(currentPositionProvider);
     final isOnline = ref.watch(networkOnlineProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go('/dashboard');
+      },
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
@@ -188,8 +204,9 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _StatusPill extends StatelessWidget {

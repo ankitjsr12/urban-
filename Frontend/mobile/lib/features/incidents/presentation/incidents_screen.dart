@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/storage/local_database.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/api_endpoints.dart';
@@ -130,15 +131,27 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0F1E),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF111827),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go('/dashboard');
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0F1E),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF111827),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/dashboard');
+              }
+            },
+          ),
         title: const Text('Incidents & Alerts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         actions: [
           IconButton(
@@ -308,6 +321,7 @@ class _IncidentsScreenState extends ConsumerState<IncidentsScreen> {
                         },
                       ),
                     ),
+      ),
     );
   }
 }

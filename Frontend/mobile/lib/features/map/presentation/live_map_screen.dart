@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../services/gps_service.dart';
@@ -51,6 +52,7 @@ class _LiveMapScreenState extends ConsumerState<LiveMapScreen>
   @override
   void dispose() {
     _pulseController.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -586,15 +588,27 @@ class _LiveMapScreenState extends ConsumerState<LiveMapScreen>
 
     mapLayers.add(MarkerLayer(markers: allMarkers));
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0F1E),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF111827),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go('/dashboard');
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0F1E),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF111827),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/dashboard');
+              }
+            },
+          ),
         title: const Text(
           'Live GIS Map & Hazards',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
@@ -833,6 +847,7 @@ class _LiveMapScreenState extends ConsumerState<LiveMapScreen>
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
 import '../../../models/models.dart';
 
@@ -62,7 +63,10 @@ class _AiCameraScreenState extends ConsumerState<AiCameraScreen> {
       if (cams.isEmpty) return;
       final ctrl = CameraController(cams.first, ResolutionPreset.medium, enableAudio: false);
       await ctrl.initialize();
-      if (!mounted) return;
+      if (!mounted) {
+        ctrl.dispose();
+        return;
+      }
       setState(() { _ctrl = ctrl; _ready = true; });
     } catch (_) {}
   }
@@ -78,7 +82,17 @@ class _AiCameraScreenState extends ConsumerState<AiCameraScreen> {
     final detStream = ref.watch(_detectionStreamProvider);
     final detections = detStream.valueOrNull ?? [];
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/monitor');
+        }
+      },
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         fit: StackFit.expand,
@@ -112,7 +126,13 @@ class _AiCameraScreenState extends ConsumerState<AiCameraScreen> {
               ),
               child: Row(children: [
                 GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/monitor');
+                    }
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
