@@ -41,6 +41,8 @@ class Settings(BaseSettings):
             value = value.strip()
             if not value or value in ('your_postgresql_connection_string', 'CHANGE_ME', 'none', ''):
                 return 'postgresql+asyncpg://urbansense:urbansense@localhost:5432/urbansense'
+            import re
+            value = re.sub(r'^(po)+stgres(ql)?(\+[a-zA-Z0-9_]+)?://', 'postgresql+asyncpg://', value)
             if value.startswith('postgres://'):
                 return value.replace('postgres://', 'postgresql+asyncpg://', 1)
             if value.startswith('postgresql://') and not value.startswith('postgresql+asyncpg://'):
