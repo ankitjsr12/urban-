@@ -1,0 +1,62 @@
+name: Test Redistribute
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+permissions: {}
+
+jobs:
+  test-redistribute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: ".python-version"
+      - name: Install build dependencies
+        run: pip install build
+      - name: Build source distribution
+        run: python -m build --sdist
+      - name: Decompress source distribution
+        run: |
+          cd dist
+          tar xvf fastapi*.tar.gz
+      - name: Install test dependencies
+        run: |
+          cd dist/fastapi*/
+          pip install --group tests --editable .[all]
+      - name: Run source distribution tests
+        run: |
+          cd dist/fastapi*/
+          bash scripts/test.sh
+      - name: Build wheel distribution
+        run: |
+          cd dist
+          pip wheel --no-deps fastapi*.tar.gz
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+  # https://github.com/marketplace/actions/alls-green#why
+  test-redistribute-alls-green:  # This job does nothing and is only used for the branch protection
+    if: always()
+    needs:
+      - test-redistribute
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}

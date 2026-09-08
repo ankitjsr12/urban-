@@ -87,6 +87,3 @@ node_modules/
 .flutter-plugins-dependencies
 *.iml
 
-# Third-party AI libraries (local dev dependencies, not tracked)
-Open_cv/
-PaddleOCR/
