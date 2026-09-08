@@ -35,7 +35,7 @@ export default function LoginPage() {
       if (msg) {
         setError(msg);
       } else if (axiosErr?.message?.includes('Network Error') || !axiosErr?.response) {
-        setError('Cannot connect to backend server at ' + (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + '. Make sure the FastAPI service is running or enable mock mode in .env.');
+        setError('Cannot connect to backend server at ' + (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000') + '. Make sure the FastAPI service is running or enable mock mode in .env.');
       } else {
         setError('Login failed. Please check your credentials.');
       }
