@@ -7,23 +7,34 @@ import 'package:camera/camera.dart';
 import '../../../models/models.dart';
 
 // Mock AI detection stream — replace with real AI model or backend polling
-final _detectionStreamProvider = StreamProvider<List<AiDetectionResult>>((ref) {
-  return Stream.periodic(const Duration(seconds: 2), (_) {
-    final rng = Random();
-    final types = DetectionType.values;
+final _detectionStreamProvider = StreamProvider.autoDispose<List<AiDetectionResult>>((ref) {
+  final controller = StreamController<List<AiDetectionResult>>();
+  final rng = Random();
+  final types = DetectionType.values;
+
+  final timer = Timer.periodic(const Duration(seconds: 2), (_) {
     final count = rng.nextInt(3) + 1;
-    return List.generate(count, (i) => AiDetectionResult(
-      type: types[rng.nextInt(types.length)],
-      confidence: 0.72 + rng.nextDouble() * 0.27,
-      timestamp: DateTime.now(),
-      bbox: [
-        rng.nextDouble() * 0.5,
-        rng.nextDouble() * 0.4,
-        0.2 + rng.nextDouble() * 0.3,
-        0.15 + rng.nextDouble() * 0.2,
-      ],
-    ));
+    if (!controller.isClosed) {
+      controller.add(List.generate(count, (i) => AiDetectionResult(
+        type: types[rng.nextInt(types.length)],
+        confidence: 0.72 + rng.nextDouble() * 0.27,
+        timestamp: DateTime.now(),
+        bbox: [
+          rng.nextDouble() * 0.5,
+          rng.nextDouble() * 0.4,
+          0.2 + rng.nextDouble() * 0.3,
+          0.15 + rng.nextDouble() * 0.2,
+        ],
+      )));
+    }
   });
+
+  ref.onDispose(() {
+    timer.cancel();
+    controller.close();
+  });
+
+  return controller.stream;
 });
 
 const _detectionColors = {
@@ -194,8 +205,9 @@ class _AiCameraScreenState extends ConsumerState<AiCameraScreen> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _BoundingBox extends StatelessWidget {

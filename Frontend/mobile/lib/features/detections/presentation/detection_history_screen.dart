@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../models/models.dart';
 
 // Mock data for detection history
@@ -19,10 +20,26 @@ class DetectionHistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0F1E),
-      appBar: AppBar(
-        title: const Text('Detection History'),
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        context.go('/dashboard');
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0F1E),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/dashboard');
+              }
+            },
+          ),
+          title: const Text('Detection History'),
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.sync_rounded, size: 16),
@@ -75,8 +92,9 @@ class DetectionHistoryScreen extends StatelessWidget {
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 
   Color _typeColor(String type) {
     const m = {

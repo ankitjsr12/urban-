@@ -15,11 +15,14 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
   CameraController? _cameraController;
   bool _cameraReady = false;
 
+  late final GpsService _gpsService;
+
   static const _busId = 'mock-bus-id'; // Replace with actual bus ID from auth
 
   @override
   void initState() {
     super.initState();
+    _gpsService = ref.read(gpsServiceProvider);
     _initCamera();
     _startMonitoring();
   }
@@ -48,11 +51,11 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
   }
 
   Future<void> _startMonitoring() async {
-    await ref.read(gpsServiceProvider).startTracking(busId: _busId);
+    await _gpsService.startTracking(busId: _busId);
   }
 
   Future<void> _stopMonitoring() async {
-    await ref.read(gpsServiceProvider).stopTracking();
+    await _gpsService.stopTracking();
     if (mounted) {
       if (context.canPop()) {
         context.pop();
@@ -64,7 +67,7 @@ class _MonitoringScreenState extends ConsumerState<MonitoringScreen> {
 
   @override
   void dispose() {
-    ref.read(gpsServiceProvider).stopTracking();
+    _gpsService.stopTracking();
     _cameraController?.dispose();
     super.dispose();
   }
