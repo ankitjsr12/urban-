@@ -78,3 +78,15 @@ docker-data/
 
 # MinIO local data
 minio_data/
+
+# Node.js
+node_modules/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins-dependencies
+*.iml
+
+# Third-party AI libraries (local dev dependencies, not tracked)
+Open_cv/
+PaddleOCR/
