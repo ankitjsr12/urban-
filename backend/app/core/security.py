@@ -16,9 +16,15 @@ def verify_password(password: str, hashed: str) -> bool:
     except VerifyMismatchError:
         return False
 
+import uuid
+
 def create_token(subject: str, role: str, kind: str, expires: timedelta) -> str:
     now = datetime.now(timezone.utc)
-    return jwt.encode({"sub": subject, "role": role, "kind": kind, "iat": now, "exp": now + expires}, settings.jwt_secret_key, algorithm=ALGORITHM)
+    return jwt.encode(
+        {"sub": subject, "role": role, "kind": kind, "iat": now, "exp": now + expires, "jti": str(uuid.uuid4())},
+        settings.jwt_secret_key,
+        algorithm=ALGORITHM,
+    )
 
 def decode_token(token: str) -> dict:
     return jwt.decode(token, settings.jwt_secret_key, algorithms=[ALGORITHM])

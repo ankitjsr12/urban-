@@ -7,8 +7,8 @@ import { login, getMe } from '../../services/auth';
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setToken, setUser } = useAuthStore();
-  const [email, setEmail] = useState('admin@urbansense.in');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('admin@urbansense.local');
+  const [password, setPassword] = useState('ChangeMe123!');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -130,8 +130,8 @@ export default function LoginPage() {
 
         <div style={{ marginTop: 24, padding: 14, background: 'var(--clr-bg-elevated)', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--clr-text-muted)' }}>
           <strong style={{ color: 'var(--clr-text-secondary)' }}>Demo credentials</strong><br />
-          Email: <span style={{ fontFamily: 'var(--font-mono)' }}>admin@urbansense.in</span><br />
-          Password: <span style={{ fontFamily: 'var(--font-mono)' }}>password123</span>
+          Email: <span style={{ fontFamily: 'var(--font-mono)' }}>admin@urbansense.local</span><br />
+          Password: <span style={{ fontFamily: 'var(--font-mono)' }}>ChangeMe123!</span>
         </div>
       </div>
     </div>

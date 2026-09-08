@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     def fix_database_url(cls, value):
         if isinstance(value, str):
             value = value.strip()
+            if not value or value in ('your_postgresql_connection_string', 'CHANGE_ME', 'none', ''):
+                return 'postgresql+asyncpg://urbansense:urbansense@localhost:5432/urbansense'
             if value.startswith('postgres://'):
                 return value.replace('postgres://', 'postgresql+asyncpg://', 1)
             if value.startswith('postgresql://') and not value.startswith('postgresql+asyncpg://'):

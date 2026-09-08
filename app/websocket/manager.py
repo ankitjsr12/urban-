@@ -33,5 +33,9 @@ class ConnectionManager:
         for ws in dead:
             self.disconnect(ws, channel)
 
+    @property
+    def active_connections(self) -> dict[str, set[WebSocket]]:
+        return self.channels
+
 
 manager = ConnectionManager()

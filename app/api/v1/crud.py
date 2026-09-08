@@ -598,8 +598,14 @@ async def create_detection(data: DetectionIn, db: AsyncSession = Depends(get_db)
     await db.commit()
     await db.refresh(x)
 
-    await manager.broadcast('detections', {'event': 'DETECTION_RECORDED', 'data': out(x)})
-    return {'data': out(x)}
+    # Process through AI Event Engine
+    from app.services.event_engine import AIEventEngine
+    event_result = await AIEventEngine.process_detection(db=db, detection=x)
+
+    await manager.broadcast('detections', {'event': 'DETECTION_RECORDED', 'data': out(x), 'event_result': event_result})
+    resp = out(x)
+    resp['event_result'] = event_result
+    return {'data': resp}
 
 
 @router.get('/detections', response_model=Envelope[dict])
@@ -649,6 +655,33 @@ async def create_road_defect(data: DefectIn, db: AsyncSession = Depends(get_db),
     except ValueError:
         stat = DefectStatus.OPEN
 
+    # Deduplication check
+    from app.services.duplicate_detector import DuplicateDetector
+    from app.services.severity_engine import SeverityEngine
+
+    duplicate = await DuplicateDetector.find_duplicate_defect(
+        db=db,
+        latitude=data.latitude,
+        longitude=data.longitude,
+        defect_type=dtype,
+        distance_meters=50.0,
+    )
+    if duplicate:
+        meta = dict(duplicate.metadata_json or {})
+        rec = int(meta.get("recurrence_count", 1)) + 1
+        meta["recurrence_count"] = rec
+        duplicate.metadata_json = meta
+        if data.confidence and data.confidence > duplicate.confidence:
+            duplicate.confidence = data.confidence
+        await db.commit()
+        await db.refresh(duplicate)
+        res_dup = out(duplicate)
+        res_dup["is_duplicate"] = True
+        return {'data': res_dup}
+
+    if not data.severity:
+        sev, _, _ = SeverityEngine.calculate_defect_severity(dtype, data.confidence)
+
     x = RoadDefect(
         defect_type=dtype,
         severity=sev,
@@ -666,7 +699,9 @@ async def create_road_defect(data: DefectIn, db: AsyncSession = Depends(get_db),
     db.add(x)
     await db.commit()
     await db.refresh(x)
-    return {'data': out(x)}
+    res_new = out(x)
+    res_new["is_duplicate"] = False
+    return {'data': res_new}
 
 
 @router.get('/road-defects', response_model=Envelope[dict])
@@ -910,6 +945,26 @@ async def get_nearby_traffic(
 
 @router.post('/incidents', response_model=Envelope[dict], status_code=status.HTTP_201_CREATED)
 async def create_incident(data: IncidentIn, db: AsyncSession = Depends(get_db), user: User = Depends(current_user)):
+    from app.services.duplicate_detector import DuplicateDetector
+
+    duplicate = await DuplicateDetector.find_duplicate_incident(
+        db=db,
+        latitude=data.latitude,
+        longitude=data.longitude,
+        incident_type=data.incident_type,
+        distance_meters=100.0,
+    )
+    if duplicate:
+        meta = dict(duplicate.metadata_json or {})
+        rec = int(meta.get("recurrence_count", 1)) + 1
+        meta["recurrence_count"] = rec
+        duplicate.metadata_json = meta
+        await db.commit()
+        await db.refresh(duplicate)
+        res_dup = out(duplicate)
+        res_dup["is_duplicate"] = True
+        return {'data': res_dup}
+
     sev = data.severity or data.priority
     x = Incident(
         incident_type=data.incident_type,
@@ -932,7 +987,9 @@ async def create_incident(data: IncidentIn, db: AsyncSession = Depends(get_db), 
     await db.refresh(x)
 
     await manager.broadcast('incidents', {'event': 'INCIDENT_CREATED', 'data': out(x)})
-    return {'data': out(x)}
+    res_new = out(x)
+    res_new["is_duplicate"] = False
+    return {'data': res_new}
 
 
 @router.get('/incidents', response_model=Envelope[dict])

@@ -5,11 +5,14 @@ from app.main import app
 client = TestClient(app)
 
 
+import uuid
+
 def test_auth_registration_and_login_flow():
     # 1. Register new user
+    uid_str = uuid.uuid4().hex[:8]
     reg_payload = {
         'name': 'Test Operator',
-        'email': 'operator.test@urbansense.local',
+        'email': f'operator.{uid_str}@urbansense.local',
         'password': 'StrongPassword123!',
         'role': 'AUTHORITY',
         'phone': '+15551112222',
@@ -77,9 +80,10 @@ def test_auth_invalid_credentials():
 
 def test_rbac_authorization_enforcement():
     # Register a CITIZEN user
+    uid_str = uuid.uuid4().hex[:8]
     citizen_payload = {
         'name': 'Regular Citizen',
-        'email': 'citizen.regular@urbansense.local',
+        'email': f'citizen.{uid_str}@urbansense.local',
         'password': 'CitizenPassword123!',
         'role': 'CITIZEN',
     }

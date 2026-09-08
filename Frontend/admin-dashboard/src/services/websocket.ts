@@ -1,7 +1,7 @@
 type WsEvent = { channel: string; [key: string]: unknown };
 type Handler = (event: WsEvent) => void;
 
-const WS_BASE = import.meta.env.VITE_WS_URL || 'wss://urbansense-api.onrender.com';
+const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:8000';
 const VALID_CHANNELS = ['buses', 'incidents', 'detections', 'traffic'] as const;
 type Channel = typeof VALID_CHANNELS[number];
 
@@ -9,11 +9,26 @@ class WebSocketManager {
   private sockets: Map<Channel, WebSocket> = new Map();
   private handlers: Map<Channel, Set<Handler>> = new Map();
   private reconnectTimers: Map<Channel, ReturnType<typeof setTimeout>> = new Map();
+  private heartbeatTimers: Map<Channel, ReturnType<typeof setInterval>> = new Map();
 
   connect(channel: Channel): void {
     if (this.sockets.get(channel)?.readyState === WebSocket.OPEN) return;
 
     const ws = new WebSocket(`${WS_BASE}/live/${channel}`);
+
+    ws.onopen = () => {
+      // Start heartbeat
+      const hb = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          try {
+            ws.send(JSON.stringify({ type: 'ping' }));
+          } catch {
+            // ignore send error
+          }
+        }
+      }, 30000);
+      this.heartbeatTimers.set(channel, hb);
+    };
 
     ws.onmessage = (ev) => {
       try {
@@ -25,6 +40,9 @@ class WebSocketManager {
     };
 
     ws.onclose = () => {
+      const hb = this.heartbeatTimers.get(channel);
+      if (hb) clearInterval(hb);
+      this.heartbeatTimers.delete(channel);
       this.sockets.delete(channel);
       // Exponential back-off reconnect
       const timer = setTimeout(() => this.connect(channel), 3000);
@@ -37,6 +55,9 @@ class WebSocketManager {
   }
 
   disconnect(channel: Channel): void {
+    const hb = this.heartbeatTimers.get(channel);
+    if (hb) clearInterval(hb);
+    this.heartbeatTimers.delete(channel);
     const timer = this.reconnectTimers.get(channel);
     if (timer) clearTimeout(timer);
     this.reconnectTimers.delete(channel);
