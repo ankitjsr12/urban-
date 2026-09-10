@@ -32,5 +32,3 @@ All secrets and provider settings are environment variables. MinIO is the local 
 
 All routes are versioned under `/api/v1`. The backend deliberately does not implement the Flutter mobile application or React admin dashboard; their integration contract is the generated OpenAPI document.
 
-License 
-MIT LICENSE 
